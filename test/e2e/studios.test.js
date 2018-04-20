@@ -42,7 +42,9 @@ describe('Studio API', () => {
             });
     });
 
-    it('GET - all studios', () => {
+    const getFields = ({ _id, name }) => ({ _id, name });
+    
+    it('GET - all studios -return only Name & ID', () => {
         return request.post('/studios')
             .send(studio2)
             .then(checkOk)
@@ -53,7 +55,7 @@ describe('Studio API', () => {
                 return request.get('/studios')
                     .then(checkOk)
                     .then(({ body }) => {
-                        assert.deepEqual(body, [studio1, studio2]);
+                        assert.deepEqual(body, [studio1, studio2].map(getFields));
                     });
 
             });
