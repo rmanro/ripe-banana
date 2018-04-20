@@ -1,5 +1,4 @@
 const { assert } = require('chai');
-const { Types } = require('mongoose');
 const Actor = require('../../lib/models/Actor');
 const { getErrors } = require('./helpers');
 
@@ -7,7 +6,7 @@ describe('Actor Model', () => {
     it('valid good model', () => {
         const data = {
             name: 'Brad Pitt',
-            dob: new Date('1963-12-18'),
+            dob: '1963-12-18',
             pob: 'Shawnee, OK'
         };
 
