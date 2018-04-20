@@ -4,21 +4,6 @@ const { dropCollection } = require('./db');
 
 describe('actors API', () => {
 
-    const saveActor = (actorName) => {
-        it('saves an actor', () => {
-            return request.post('/actors')
-                .send(actorName)
-                .then(checkOk)
-                .then(({ body }) => {
-                    const { _id, __v } = body;
-                    assert.ok(_id);
-                    assert.equal(__v, 0);
-                    assert.deepEqual(body, { _id, __v, ...actorName });
-                    bradPitt = body;
-                });
-        });
-    };
-
     before(() => dropCollection('actors'));
 
     let bradPitt = {
@@ -84,6 +69,21 @@ describe('actors API', () => {
     const checkOk = res => {
         if(!res.ok) throw res.error;
         return res;
+    };
+
+    const saveActor = (actorName) => {
+        it('saves an actor', () => {
+            return request.post('/actors')
+                .send(actorName)
+                .then(checkOk)
+                .then(({ body }) => {
+                    const { _id, __v } = body;
+                    assert.ok(_id);
+                    assert.equal(__v, 0);
+                    assert.deepEqual(body, { _id, __v, ...actorName });
+                    bradPitt = body;
+                });
+        });
     };
 
     saveActor(bradPitt);
