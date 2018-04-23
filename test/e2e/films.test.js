@@ -148,12 +148,6 @@ describe('Films API', () => {
             });
     });
 
-    // const getFields2 = ({ _id, title }) => {
-    //     return { 
-    //         _id, title, studio: { _id: studio1._id, name: studio1.name } 
-    //     };
-    // };
-
     it('POST - adds a film to a review', () => {
         review1.film = film1._id;
         review1.reviewer = reviewer1._id;
@@ -203,18 +197,7 @@ describe('Films API', () => {
                 });
             });
     });
-    // return request.get(`/films/${film1._id}`)
-    //     .then(checkOk)
-    //     .then(({ body }) => {
-    //         assert.deepEqual(body, {
-    //             ...film1,
-    //             // reviews: {
-    //             //     _id: 
-    //             // }
-    //         });
-    //     });
-   
-
+    
     it('deletes a film', () => {
         return request.delete(`/films/${film2._id}`)
             .then(() => {

@@ -7,6 +7,7 @@ describe('Reviewer e2e', () => {
 
     before(() => dropCollection('reviewers'));
 
+
     let donald = {
         name: 'Angry Donald',
         company: 'angrydonald.com'
@@ -16,6 +17,34 @@ describe('Reviewer e2e', () => {
         name: 'Angry Robert',
         company: 'angryrob.com'
     };
+
+    let review1 = {
+        rating: 4,
+        reviewer: {},
+        review: 'sweet film',
+        film: {}
+    };
+
+    let film1 = {
+        title: 'Brad Pitt movie',
+        studio: {},
+        released: 2000,
+        cast: [{
+            part: 'Cool guy',
+            actor: {}
+        }]
+    }; 
+
+    before(() => {
+        review1.reviewer = donald._id;
+        review1.film = film1._id;
+
+        return request.post('/reviews')
+            .send(review1)
+            .then(({ body }) => {
+                review1 = body;
+            });
+    });
 
     it('saves a reviewer', () => {
         return request.post('/reviewers')
@@ -37,6 +66,7 @@ describe('Reviewer e2e', () => {
                 return request.get(`/reviewers/${rob._id}`);
             })
             .then(({ body }) => {
+                console.log('BODY', body);
                 assert.deepEqual(body, rob);
             });
     });
