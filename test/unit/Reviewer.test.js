@@ -2,7 +2,7 @@ const { assert } = require('chai');
 const Reviewer = require('../../lib/models/Reviewer');
 const { getErrors } = require('./helpers');
 
-describe('Review Model', () => {
+describe('Reviewer Model', () => {
 
     it('Valid good model', () => {
         const data = {
