@@ -39,7 +39,6 @@ describe('Review e2e', () => {
         return request.post('/reviews')
             .send(review1)
             .then(({ body }) => {
-                console.log(body);
                 const { _id, __v, createdAt, updatedAt } = body;
                 assert.ok(_id);
                 assert.equal(__v, 0);
@@ -53,7 +52,6 @@ describe('Review e2e', () => {
     it('gets a review', () => {
         return request.get(`/reviews/${review1._id}`)
             .then(({ body }) => {
-                console.log(body);
                 assert.deepEqual(body, [{
                     ...review1,
                     reviewer: {
