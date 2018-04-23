@@ -54,13 +54,23 @@ describe('Review e2e', () => {
         return request.get(`/reviews/${review1._id}`)
             .then(({ body }) => {
                 console.log(body);
-                assert.deepEqual(body, {
+                assert.deepEqual(body, [{
                     ...review1,
                     reviewer: {
                         _id: donald._id,
                         name: donald.name
                     }
-                });
+                }]);
+            });
+    });
+
+    const getFields = ({ _id, rating, review }) => ({ _id, rating, review });
+
+    it('gets all reviews, only id, rating, review, film', () => {
+        return request.get('/reviews')
+            .then(checkOk)
+            .then(({ body }) => {
+                assert.deepEqual(body, [review1].map(getFields));
             });
     });
 
