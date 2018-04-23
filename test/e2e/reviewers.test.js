@@ -59,6 +59,10 @@ describe('Reviewer e2e', () => {
     });
     const roundTrip = doc => JSON.parse(JSON.stringify(doc.toJSON()));
 
+    it('gets reviewer by id snd returns reviews', () => {
+        
+    });
+
     it('gets reviewer by id', () => {
         return Reviewer.create(rob).then(roundTrip)
             .then(saved => {
@@ -66,8 +70,10 @@ describe('Reviewer e2e', () => {
                 return request.get(`/reviewers/${rob._id}`);
             })
             .then(({ body }) => {
-                console.log('BODY', body);
-                assert.deepEqual(body, rob);
+                assert.deepEqual(body, { 
+                    ...rob, 
+                    reviews: []
+                });
             });
     });
 
