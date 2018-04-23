@@ -65,13 +65,11 @@ describe('Films API', () => {
     it('POST - saving a film', () => {
         film1.studio._id = studio1._id;
         film1.studio.name = studio1.name;
-        // console.log('FILM1STUDIO', film1.studio.name);
         film1.cast[0].actor._id = actor1._id;
         return request.post('/films')
             .send(film1)
             .then(checkOk)
             .then(({ body }) => {
-                console.log('DABODY', body);
                 const { _id, __v, } = body;
                 assert.ok(_id);
                 assert.equal(__v, 0);
@@ -81,14 +79,16 @@ describe('Films API', () => {
             });
     });
 
-    const getFields = ({ _id, title, released, studio }) => ({ _id, title, released, studio });
+    const getFields = ({ _id, title, released }) => {
+        return { 
+            _id, title, released, studio: { _id: studio1._id, name: studio1.name } 
+        };
+    };
     
     it('GET - all films', () => {
         return request.get('/films')
             .then(checkOk)
             .then(({ body }) => {
-                // console.log('THEBODY', body);
-                // console.log('BODYSTUDO:', body[0].studio.name);
                 assert.deepEqual(body, [film1].map(getFields));
             });
     });
