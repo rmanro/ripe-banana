@@ -60,6 +60,14 @@ describe('Films API', () => {
             });
     });
 
+    before(() => {
+        return request.post('/reviewers')
+            .send(reviewer1)
+            .then(({ body }) => {
+                reviewer1 = body;
+            });
+    });
+
     let film1 = {
         title: 'Brad Pitt movie',
         studio: {},
@@ -88,7 +96,8 @@ describe('Films API', () => {
     let review1 = {
         rating: 4,
         reviewer: {},
-        review: 'sweet film'
+        review: 'sweet film',
+        film: {}
     };
     
     it('POST - saving a film', () => {
@@ -139,24 +148,72 @@ describe('Films API', () => {
             });
     });
 
-    // const getFields2 = ({ _id, title, released }) => {
+    // const getFields2 = ({ _id, title }) => {
     //     return { 
-    //         _id, title, released, studio: { _id: studio1._id, name: studio1.name } 
+    //         _id, title, studio: { _id: studio1._id, name: studio1.name } 
     //     };
     // };
 
-    it.skip('get film by id', () => {
+    it('POST - adds a film to a review', () => {
+        review1.film = film1._id;
+        review1.reviewer = reviewer1._id;
+        return request.post('/reviews')
+            .send(review1)
+            .then(({ body }) => {
+                const { _id, __v, film, createdAt, updatedAt } = body;
+                assert.ok(_id);
+                assert.ok(film);
+                assert.equal(__v, 0);
+                assert.ok(createdAt);
+                assert.ok(updatedAt);
+                assert.deepEqual(body, { _id, __v, film, createdAt, updatedAt, ...review1 });
+                review1 = body;
+            });
+    });
+
+    it('get film by id', () => {
         return request.get(`/films/${film1._id}`)
-            .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, {
-                    ...film1,
-                    // reviews: {
-                    //     _id: 
-                    // }
+                    _id: film1._id,
+                    __v: 0,
+                    title: film1.title,
+                    released: film1.released,
+                    studio: {
+                        _id: studio1._id,
+                        name: studio1.name
+                    },
+                    cast: [{
+                        _id: film1.cast[0]._id,
+                        part: film1.cast[0].part,
+                        actor: {
+                            _id: actor1._id,
+                            name: actor1.name
+                        }
+                    }],
+                    reviews: [{
+                        _id: review1._id,
+                        rating: review1.rating,
+                        review: review1.review,
+                        reviewer: {
+                            _id: reviewer1._id,
+                            name: reviewer1.name
+                        }
+                    }]
                 });
             });
     });
+    // return request.get(`/films/${film1._id}`)
+    //     .then(checkOk)
+    //     .then(({ body }) => {
+    //         assert.deepEqual(body, {
+    //             ...film1,
+    //             // reviews: {
+    //             //     _id: 
+    //             // }
+    //         });
+    //     });
+   
 
     it('deletes a film', () => {
         return request.delete(`/films/${film2._id}`)
