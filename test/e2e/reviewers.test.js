@@ -96,7 +96,7 @@ describe('Reviewer e2e', () => {
             .then(({ body }) => {
                 film1 = body;
             });
-    })
+    });
 
 
 
@@ -127,7 +127,6 @@ describe('Reviewer e2e', () => {
     it('gets reviewer by id snd returns reviews', () => {
         return request.get(`/reviewers/${jeff._id}`)
             .then(({ body }) => {
-                console.log(body);
                 assert.deepEqual(body, {
                     _id: jeff._id,
                     __v: 0,
