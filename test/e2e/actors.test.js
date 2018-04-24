@@ -71,12 +71,6 @@ describe('actors API', () => {
                 film1 = body;
             });
     });
-
-
-   
-
-   
-
     
     it('Saves Mila', () => {
         return request.post('/actors')
@@ -125,6 +119,23 @@ describe('actors API', () => {
                         released: film1.released
                     }]
                 });
+            });
+    });
+
+    it('returns message on delete of actor in film', () => {
+        return request.delete(`/actors/${bradPitt._id}`)
+            .then(({ body }) => {
+                assert.deepEqual(body, { removed: false });
+            });
+    });
+
+    it('returns true on delete of actor not in film', () => {
+        return request.delete(`/actors/${milaKunis._id}`)
+            .then(() => {
+                return request.get(`/actors/${milaKunis._id}`); 
+            })
+            .then(res => {
+                assert.equal(res.status, 404);
             });
     });
 });
