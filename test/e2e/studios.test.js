@@ -24,6 +24,31 @@ describe('Studio API', () => {
         }
     };
 
+    let actor1 = {
+        name: 'Brad Pitt',
+        dob: '1963-12-18',
+        pob: 'Shawnee, OK'
+    };
+
+    let film1 = {
+        title: 'Brad Pitt movie',
+        studio: {},
+        released: 2000,
+        cast: [{
+            part: 'Cool guy',
+            actor: {}
+        }]
+    };
+
+    before(() => {
+        return request.post('/actors')
+            .send(actor1)
+            .then(({ body }) => {
+                actor1 = body;
+            });
+    });
+
+
     const checkOk = res => {
         if(!res.ok) throw res.error;
         return res;
@@ -58,6 +83,46 @@ describe('Studio API', () => {
                         assert.deepEqual(body, [studio1, studio2].map(getFields));
                     });
 
+            });
+    });
+
+    it('GET by id', () => {
+        film1.studio._id = studio1._id;
+        film1.studio.name = studio1.name;
+        film1.cast[0].actor._id = actor1._id;
+        return request.post('/films')
+            .send(film1)
+            .then(checkOk)
+            .then(({ body }) => {
+                film1 = body;
+            })
+            .then(() => {
+                return request.get(`/studios/${studio1._id}`)
+                    .then(({ body }) => {
+                        assert.deepEqual(body, { ...studio1,
+                            films: [{
+                                _id: film1._id,
+                                title: film1.title
+                            }]
+                        });
+                    });
+            });
+    });
+
+    it('DELETE by id false if films exist in studio', () => {
+        return request.delete(`/studios/${studio1._id}`)
+            .then(({ body }) => {
+                assert.deepEqual(body, { removed: false });
+            });
+    });
+
+    it('returns true on delete of studio if no films', () => {
+        return request.delete(`/studios/${studio2._id}`)
+            .then(() => {
+                return request.get(`/studios/${studio2._id}`); 
+            })
+            .then(res => {
+                assert.equal(res.status, 404);
             });
     });
 });
