@@ -1,7 +1,5 @@
 const { assert } = require('chai');
-const { Types } = require('mongoose');
 const request = require('./request');
-const Review = require('../../lib/models/Review');
 const { dropCollection } = require('./db');
 
 describe('Review e2e', () => {
@@ -33,12 +31,6 @@ describe('Review e2e', () => {
         pob: 'Shawnee, OK'
     };
 
-    let actor2 = {
-        name: 'Gael Garcia Bernal',
-        dob: '1978-11-30',
-        pob: 'Guadalajara, Jalisco, Mexico'
-    
-    };
 
     before(() => {
         return request.post('/studios')
