@@ -105,7 +105,6 @@ describe('Review e2e', () => {
         return request.post('/reviews')
             .send(review1)
             .then(({ body }) => {
-                console.log(body);
                 const { _id, __v, film, createdAt, updatedAt } = body;
                 assert.ok(_id);
                 assert.ok(film);
