@@ -118,11 +118,7 @@ describe('actors API', () => {
             .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, { 
-                    _id: bradPitt._id, 
-                    __v: 0, 
-                    name: bradPitt.name, 
-                    dob: bradPitt.dob, 
-                    pob: bradPitt.pob,
+                    ...bradPitt,
                     films: [{
                         _id: film1._id,
                         title: film1.title,
