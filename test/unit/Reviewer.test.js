@@ -2,24 +2,50 @@ const { assert } = require('chai');
 const Reviewer = require('../../lib/models/Reviewer');
 const { getErrors } = require('./helpers');
 
-describe('Reviewer Model', () => {
+describe.only('Reviewer Model', () => {
 
-    it('Valid good model', () => {
-        const data = {
-            name: 'Angry Donald',
-            company: 'angrydonald.com'
-        };
-        const don = new Reviewer(data);
-        data._id = don._id;
+    const data = {
+        name: 'Roger Ebert',
+        company: 'Chicago Sun-Times',
+        email: 'roger@ebert.com',
+        roles: ['admin']
+    };
 
-        assert.deepEqual(don.toJSON(), data);
+    const password = 'roger';
+
+    let user = null;
+    beforeEach(() => {
+        user = new Reviewer(data);
+        user.generateHash(password);
     });
 
-    it('required fields', () => {
-        const reviewer = new Reviewer({});
-        const errors = getErrors(reviewer.validateSync(), 2);
-        assert.equal(errors.name.kind, 'required');
-        assert.equal(errors.company.kind, 'required');
+    it('Generates Hash From Password', () => {
+        user.generateHash(password);
+        assert.ok(user.hash);
+        assert.notEqual(user.hash, password);
     });
+
+    it('Compares Password to Hash', () => {
+        user.generateHash(password);
+        assert.isOk(user.comparePassword(password));
+    });
+
+    // it('Valid good model', () => {
+    //     const data = {
+    //         name: 'Angry Donald',
+    //         company: 'angrydonald.com'
+    //     };
+    //     const don = new Reviewer(data);
+    //     data._id = don._id;
+
+    //     assert.deepEqual(don.toJSON(), data);
+    // });
+
+    // it('required fields', () => {
+    //     const reviewer = new Reviewer({});
+    //     const errors = getErrors(reviewer.validateSync(), 4);
+    //     assert.equal(errors.name.kind, 'required');
+    //     assert.equal(errors.company.kind, 'required');
+    // });
 
 });
