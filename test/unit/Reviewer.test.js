@@ -30,22 +30,17 @@ describe.only('Reviewer Model', () => {
         assert.isOk(user.comparePassword(password));
     });
 
-    // it('Valid good model', () => {
-    //     const data = {
-    //         name: 'Angry Donald',
-    //         company: 'angrydonald.com'
-    //     };
-    //     const don = new Reviewer(data);
-    //     data._id = don._id;
+    it('Valid good model', () => {
+        const user = new Reviewer(data);
+        data._id = user._id;
+        assert.deepEqual(user.toJSON(), data);
+    });
 
-    //     assert.deepEqual(don.toJSON(), data);
-    // });
-
-    // it('required fields', () => {
-    //     const reviewer = new Reviewer({});
-    //     const errors = getErrors(reviewer.validateSync(), 4);
-    //     assert.equal(errors.name.kind, 'required');
-    //     assert.equal(errors.company.kind, 'required');
-    // });
+    it('required fields', () => {
+        const reviewer = new Reviewer({});
+        const errors = getErrors(reviewer.validateSync(), 4);
+        assert.equal(errors.name.kind, 'required');
+        assert.equal(errors.company.kind, 'required');
+    });
 
 });
