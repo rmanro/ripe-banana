@@ -2,7 +2,7 @@ const { assert } = require('chai');
 const Reviewer = require('../../lib/models/Reviewer');
 const { getErrors } = require('./helpers');
 
-describe.only('Reviewer Model', () => {
+describe('Reviewer Model', () => {
 
     const data = {
         name: 'Roger Ebert',
