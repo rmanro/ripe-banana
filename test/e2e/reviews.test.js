@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 const request = require('./request');
-const { dropCollection } = require('./db');
+const { dropCollection, createToken } = require('./db');
 const { verify } = require('../../lib/util/token-service');
 
 
@@ -12,6 +12,13 @@ describe('Review e2e', () => {
     before(() => dropCollection('studios'));
     before(() => dropCollection('actors'));
     before(() => dropCollection('films'));
+
+    let token = '';
+    before(() => createToken()
+        .then(t => {
+            token = t;
+            reviewer1._id = verify(token).id;
+        }));
 
     const checkOk = res => {
         if(!res.ok) throw res.error;
@@ -60,11 +67,11 @@ describe('Review e2e', () => {
         }]
     };
 
-    let donald = {
-        name: 'Angry Donald',
-        company: 'angrydonald.com',
-        email: 'donald@angrydonald.com',
-        password: 'donald'
+    let reviewer1 = {
+        name: 'IGN',
+        company: 'IGN',
+        email: 'ign@ign.com',
+        password: 'ign'
     };
 
     before(() => {
@@ -78,13 +85,13 @@ describe('Review e2e', () => {
             });
     });
 
-    before(() => {
-        return request.post('/auth/signup')
-            .send(donald)
-            .then(({ body }) => {
-                donald._id = verify(body.token).id;
-            });
-    });
+    // before(() => {
+    //     return request.post('/auth/signup')
+    //         .send(donald)
+    //         .then(({ body }) => {
+    //             donald._id = verify(body.token).id;
+    //         });
+    // });
 
     let review1 = {
         rating: 4,
@@ -95,10 +102,11 @@ describe('Review e2e', () => {
 
 
     it('saves a review', () => {
-        review1.reviewer = donald._id;
+        review1.reviewer = reviewer1._id;
         review1.film = film1._id;
 
         return request.post('/reviews')
+            .set('Authorization', token)
             .send(review1)
             .then(({ body }) => {
                 const { _id, __v, film, createdAt, updatedAt } = body;
@@ -118,8 +126,8 @@ describe('Review e2e', () => {
                 assert.deepEqual(body, [{
                     ...review1,
                     reviewer: {
-                        _id: donald._id,
-                        name: donald.name
+                        _id: reviewer1._id,
+                        name: reviewer1.name
                     }
                 }]);
             });

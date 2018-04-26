@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 const request = require('./request');
-const { dropCollection } = require('./db');
+const { dropCollection, createToken } = require('./db');
 const { verify } = require('../../lib/util/token-service');
 
 
@@ -10,6 +10,13 @@ describe('Films API', () => {
     before(() => dropCollection('studios'));
     before(() => dropCollection('actors'));
     before(() => dropCollection('films'));
+
+    let token = '';
+    before(() => createToken()
+        .then(t => {
+            token = t;
+            reviewer1._id = verify(token).id;
+        }));
 
     const checkOk = res => {
         if(!res.ok) throw res.error;
@@ -62,13 +69,13 @@ describe('Films API', () => {
             });
     });
 
-    before(() => {
-        return request.post('/auth/signup')
-            .send(reviewer1)
-            .then(({ body }) => {
-                reviewer1._id = verify(body.token).id;
-            });
-    });
+    // before(() => {
+    //     return request.post('/auth/signup')
+    //         .send(reviewer1)
+    //         .then(({ body }) => {
+    //             reviewer1._id = verify(body.token).id;
+    //         });
+    // });
 
     let film1 = {
         title: 'Brad Pitt movie',
@@ -156,6 +163,7 @@ describe('Films API', () => {
         review1.film = film1._id;
         review1.reviewer = reviewer1._id;
         return request.post('/reviews')
+            .set('Authorization', token)
             .send(review1)
             .then(({ body }) => {
                 const { _id, __v, film, createdAt, updatedAt } = body;
