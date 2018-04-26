@@ -3,7 +3,7 @@ const request = require('./request');
 const { dropCollection, createToken } = require('./db');
 const { verify } = require('../../lib/util/token-service');
 
-describe.only('Studio API', () => {
+describe('Studio API', () => {
 
     before(() => dropCollection('films'));
     before(() => dropCollection('reviewers'));
@@ -75,7 +75,7 @@ describe.only('Studio API', () => {
         return res;
     };
 
-    it.only('POST - saves a studio', () => {
+    it('POST - saves a studio', () => {
         return request.post('/studios')
             .set('Authorization', token)
             .send(studio1)
@@ -89,7 +89,7 @@ describe.only('Studio API', () => {
             });
     });
 
-    it.only('POST - Non-Admin attempts to Save', () => {
+    it('POST - Non-Admin attempts to Save', () => {
         return request.post('/studios')
             .set('Authorization', 'bad token')
             .send(studio1)
