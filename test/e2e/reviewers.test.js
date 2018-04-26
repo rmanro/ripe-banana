@@ -1,34 +1,38 @@
 const { assert } = require('chai');
 const request = require('./request');
 const Reviewer = require('../../lib/models/Reviewer');
-const { dropCollection } = require('./db');
+const { dropCollection, createToken } = require('./db');
+const { verify } = require('../../lib/util/token-service');
+
 
 describe('Reviewer e2e', () => {
 
-    before(() => dropCollection('reviewers'));
-    before(() => dropCollection('studios'));
     before(() => dropCollection('actors'));
+    before(() => dropCollection('studios'));
     before(() => dropCollection('films'));
+    before(() => dropCollection('reviewers'));
+    before(() => dropCollection('reviews'));
+
+    let token = '';
+    before(() => createToken(reviewer1)
+        .then(t => {
+            token = t;
+            reviewer1._id = verify(token).id;
+        }));
 
     const checkOk = res => {
         if(!res.ok) throw res.error;
         return res;
     };
 
-    let donald = {
-        name: 'Angry Donald',
-        company: 'angrydonald.com'
+    let reviewer1 = {
+        name: 'IGN',
+        company: 'IGN',
+        email: 'ign@ign.com',
+        password: 'ign',
+        roles: ['admin']
     };
 
-    let rob = {
-        name: 'Angry Robert',
-        company: 'angryrob.com'
-    };
-
-    let jeff = {
-        name: 'Angry Jeff',
-        company: 'angryjeff.com'
-    };
 
     let studio1 = {
         name: 'Miramax',
@@ -63,15 +67,8 @@ describe('Reviewer e2e', () => {
     };
 
     before(() => {
-        return request.post('/reviewers')
-            .send(jeff)
-            .then(({ body }) => {
-                jeff = body;
-            });
-    });
-
-    before(() => {
         return request.post('/studios')
+            .set('Authorization', token)
             .send(studio1)
             .then(({ body }) => {
                 studio1 = body;
@@ -80,6 +77,7 @@ describe('Reviewer e2e', () => {
 
     before(() => {
         return request.post('/actors')
+            .set('Authorization', token)
             .send(actor1)
             .then(({ body }) => {
                 actor1 = body;
@@ -91,6 +89,7 @@ describe('Reviewer e2e', () => {
         film1.studio.name = studio1.name;
         film1.cast[0].actor._id = actor1._id;
         return request.post('/films')
+            .set('Authorization', token)
             .send(film1)
             .then(checkOk)
             .then(({ body }) => {
@@ -101,37 +100,35 @@ describe('Reviewer e2e', () => {
 
 
     before(() => {
-        review1.reviewer = jeff._id;
+        review1.reviewer = reviewer1._id;
         review1.film = film1._id;
 
         return request.post('/reviews')
+            .set('Authorization', token)
             .send(review1)
             .then(({ body }) => {
                 review1 = body;
             });
     });
 
-    it('saves a reviewer', () => {
-        return request.post('/reviewers')
-            .send(donald)
-            .then(({ body }) => {
-                const { _id, __v } = body;
-                assert.ok(_id);
-                assert.equal(__v, 0);
-                assert.deepEqual(body, { _id, __v, ...donald }),
-                donald = body;
-            });
-    });
+    // it('signs up a reviewer', () => {
+    //     return request.post('/auth/signup')
+    //         .send(donald)
+    //         .then(({ body }) => {
+    //             assert.ok(body.token);
+    //             donald._id = verify(body.token).id;
+    //         });
+    // });
     const roundTrip = doc => JSON.parse(JSON.stringify(doc.toJSON()));
 
-    it('gets reviewer by id snd returns reviews', () => {
-        return request.get(`/reviewers/${jeff._id}`)
+    it('gets reviewer by id and returns reviews', () => {
+        return request.get(`/reviewers/${reviewer1._id}`)
             .then(({ body }) => {
                 assert.deepEqual(body, {
-                    _id: jeff._id,
+                    _id: reviewer1._id,
                     __v: 0,
-                    name: jeff.name,
-                    company: jeff.company,
+                    name: reviewer1.name,
+                    company: reviewer1.company,
                     reviews: [{
                         _id: review1._id,
                         rating: review1.rating,
@@ -147,30 +144,18 @@ describe('Reviewer e2e', () => {
 
     });
 
-    it('gets reviewer by id', () => {
-        return Reviewer.create(rob).then(roundTrip)
-            .then(saved => {
-                rob = saved;
-                return request.get(`/reviewers/${rob._id}`);
-            })
+    it('Updates a Reviewer', () => {
+        reviewer1.company = 'IGNN';
+        return request.put(`/reviewers/${reviewer1._id}`)
+            .set('Authorization', token)
+            .send(reviewer1)
             .then(({ body }) => {
-                assert.deepEqual(body, { 
-                    ...rob, 
-                    reviews: []
-                });
-            });
-    });
-
-    it('updates a reviewer', () => {
-        rob.company = 'angryrobert.com';
-        return request.put(`/reviewers/${rob._id}`)
-            .send(rob)
-            .then(({ body }) => {
-                assert.deepEqual(body, rob);
-                return Reviewer.findById(rob._id).then(roundTrip);
+                assert.equal(body._id, reviewer1._id);
+                assert.equal(body.company, 'IGNN');
+                return Reviewer.findById(reviewer1._id).then(roundTrip);
             })
             .then(updated => {
-                assert.deepEqual(updated, rob);
+                assert.equal(updated.company, 'IGNN');
             });
     });
 
@@ -179,7 +164,7 @@ describe('Reviewer e2e', () => {
     it('gets all reviewers', () => {
         return request.get('/reviewers')
             .then(({ body }) => {
-                assert.deepEqual(body, [jeff, donald, rob].map(getFields));
+                assert.deepEqual(body, [reviewer1].map(getFields));
             });
     });
 

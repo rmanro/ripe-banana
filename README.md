@@ -1,7 +1,7 @@
-## Ripe Banana
+## Ripe Banana-Auth
 
 The greatest movie review API ever
 
-## Authors
+## Author
 
-Henry, Ryan, Steele
+Ryan
