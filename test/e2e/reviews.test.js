@@ -4,14 +4,14 @@ const { dropCollection, createToken } = require('./db');
 const { verify } = require('../../lib/util/token-service');
 
 
-describe.only('Review e2e', () => {
+describe('Review e2e', () => {
 
     before(() => dropCollection('films'));
     before(() => dropCollection('reviewers'));
     before(() => dropCollection('reviews'));
     before(() => dropCollection('studios'));
     before(() => dropCollection('actors'));
-    before(() => dropCollection('films'));
+    
 
     let token1 = '';
     let token2 = '';
@@ -50,6 +50,7 @@ describe.only('Review e2e', () => {
 
     before(() => {
         return request.post('/studios')
+            .set('Authorization', token1)
             .send(studio1)
             .then(({ body }) => {
                 studio1 = body;
@@ -58,6 +59,7 @@ describe.only('Review e2e', () => {
 
     before(() => {
         return request.post('/actors')
+            .set('Authorization', token1)
             .send(actor1)
             .then(({ body }) => {
                 actor1 = body;
@@ -78,7 +80,8 @@ describe.only('Review e2e', () => {
         name: 'IGN',
         company: 'IGN',
         email: 'ign@ign.com',
-        password: 'ign'
+        password: 'ign',
+        roles: ['admin']
     };
 
     let reviewer2 = {
@@ -93,19 +96,12 @@ describe.only('Review e2e', () => {
         film1.studio.name = studio1.name;
         film1.cast[0].actor._id = actor1._id;
         return request.post('/films')
+            .set('Authorization', token1)
             .send(film1)
             .then(({ body }) => {
                 film1 = body;
             });
     });
-
-    // before(() => {
-    //     return request.post('/auth/signup')
-    //         .send(donald)
-    //         .then(({ body }) => {
-    //             donald._id = verify(body.token).id;
-    //         });
-    // });
 
     let review1 = {
         rating: 4,

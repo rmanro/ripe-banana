@@ -1,6 +1,8 @@
 const { assert } = require('chai');
 const request = require('./request');
-const { dropCollection } = require('./db');
+const { dropCollection, createToken } = require('./db');
+const { verify } = require('../../lib/util/token-service');
+
 
 const checkOk = res => {
     if(!res.ok) throw res.error;
@@ -12,6 +14,23 @@ describe('actors API', () => {
     before(() => dropCollection('actors'));
     before(() => dropCollection('studios'));
     before(() => dropCollection('films'));
+    before(() => dropCollection('reviewers'));
+    before(() => dropCollection('reviews'));
+
+    let token1 = '';
+    before(() => createToken(reviewer1)
+        .then(t => {
+            token1 = t;
+            reviewer1._id = verify(token1).id;
+        }));
+
+    let reviewer1 = {
+        name: 'IGN',
+        company: 'IGN',
+        email: 'ign@ign.com',
+        password: 'ign',
+        roles: ['admin']
+    };
 
     let bradPitt = {
         name: 'Brad Pitt',
@@ -46,6 +65,7 @@ describe('actors API', () => {
 
     before(() => {
         return request.post('/studios')
+            .set('Authorization', token1)
             .send(studio1)
             .then(({ body }) => {
                 studio1 = body;
@@ -54,6 +74,7 @@ describe('actors API', () => {
 
     before(() => {
         return request.post('/actors')
+            .set('Authorization', token1)
             .send(bradPitt)
             .then(({ body }) => {
                 bradPitt = body;
@@ -65,6 +86,7 @@ describe('actors API', () => {
         film1.studio.name = studio1.name;
         film1.cast[0].actor._id = bradPitt._id;
         return request.post('/films')
+            .set('Authorization', token1)
             .send(film1)
             .then(checkOk)
             .then(({ body }) => {
@@ -74,6 +96,7 @@ describe('actors API', () => {
     
     it('Saves Mila', () => {
         return request.post('/actors')
+            .set('Authorization', token1)
             .send(milaKunis)
             .then(checkOk)
             .then(({ body }) => {
@@ -89,6 +112,7 @@ describe('actors API', () => {
         bradPitt.pob = 'Shawnee, OK';
 
         return request.put(`/actors/${bradPitt._id}`)
+            .set('Authorization', token1)
             .send(bradPitt)
             .then(checkOk)
             .then(({ body }) => {
@@ -124,6 +148,7 @@ describe('actors API', () => {
 
     it('returns message on delete of actor in film', () => {
         return request.delete(`/actors/${bradPitt._id}`)
+            .set('Authorization', token1)
             .then(({ body }) => {
                 assert.deepEqual(body, { removed: false });
             });
@@ -131,6 +156,7 @@ describe('actors API', () => {
 
     it('returns true on delete of actor not in film', () => {
         return request.delete(`/actors/${milaKunis._id}`)
+            .set('Authorization', token1)
             .then(() => {
                 return request.get(`/actors/${milaKunis._id}`); 
             })

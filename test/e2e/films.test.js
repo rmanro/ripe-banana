@@ -7,12 +7,15 @@ const { verify } = require('../../lib/util/token-service');
 
 describe('Films API', () => {
     
-    before(() => dropCollection('studios'));
     before(() => dropCollection('actors'));
+    before(() => dropCollection('studios'));
     before(() => dropCollection('films'));
+    before(() => dropCollection('reviewers'));
+    before(() => dropCollection('reviews'));
+
 
     let token = '';
-    before(() => createToken()
+    before(() => createToken(reviewer1)
         .then(t => {
             token = t;
             reviewer1._id = verify(token).id;
@@ -47,6 +50,7 @@ describe('Films API', () => {
 
     before(() => {
         return request.post('/studios')
+            .set('Authorization', token)
             .send(studio1)
             .then(({ body }) => {
                 studio1 = body;
@@ -55,6 +59,7 @@ describe('Films API', () => {
 
     before(() => {
         return request.post('/actors')
+            .set('Authorization', token)
             .send(actor1)
             .then(({ body }) => {
                 actor1 = body;
@@ -63,19 +68,12 @@ describe('Films API', () => {
 
     before(() => {
         return request.post('/actors')
+            .set('Authorization', token)
             .send(actor2)
             .then(({ body }) => {
                 actor2 = body;
             });
     });
-
-    // before(() => {
-    //     return request.post('/auth/signup')
-    //         .send(reviewer1)
-    //         .then(({ body }) => {
-    //             reviewer1._id = verify(body.token).id;
-    //         });
-    // });
 
     let film1 = {
         title: 'Brad Pitt movie',
@@ -101,7 +99,8 @@ describe('Films API', () => {
         name: 'IGN',
         company: 'IGN',
         email: 'ign@ign.com',
-        password: 'ign' 
+        password: 'ign',
+        roles: ['admin'] 
     };
 
     let review1 = {
@@ -116,6 +115,7 @@ describe('Films API', () => {
         film1.studio.name = studio1.name;
         film1.cast[0].actor._id = actor1._id;
         return request.post('/films')
+            .set('Authorization', token)
             .send(film1)
             .then(checkOk)
             .then(({ body }) => {
@@ -147,6 +147,7 @@ describe('Films API', () => {
         film2.studio.name = studio1.name;
         film2.cast[0].actor._id = actor2._id;
         return request.post('/films')
+            .set('Authorization', token)
             .send(film2)
             .then(checkOk)
             .then(({ body }) => {
@@ -212,6 +213,7 @@ describe('Films API', () => {
     
     it('deletes a film', () => {
         return request.delete(`/films/${film2._id}`)
+            .set('Authorization', token)
             .then(() => {
                 return request.get(`/films/${film2._id}`); 
             })
