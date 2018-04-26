@@ -1,6 +1,8 @@
 const { assert } = require('chai');
 const request = require('./request');
 const { dropCollection } = require('./db');
+const { verify } = require('../../lib/util/token-service');
+
 
 describe('Review e2e', () => {
 
@@ -60,7 +62,9 @@ describe('Review e2e', () => {
 
     let donald = {
         name: 'Angry Donald',
-        company: 'angrydonald.com'
+        company: 'angrydonald.com',
+        email: 'donald@angrydonald.com',
+        password: 'donald'
     };
 
     before(() => {
@@ -75,10 +79,10 @@ describe('Review e2e', () => {
     });
 
     before(() => {
-        return request.post('/reviewers')
+        return request.post('/auth/signup')
             .send(donald)
             .then(({ body }) => {
-                donald = body;
+                donald._id = verify(body.token).id;
             });
     });
 

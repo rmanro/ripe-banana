@@ -2,7 +2,7 @@ const { assert } = require('chai');
 const request = require('./request');
 const { dropCollection } = require('./db');
 
-describe.only('Auth API', () => {
+describe('Auth API', () => {
 
     beforeEach(() => dropCollection('reviewers'));
 
@@ -74,4 +74,27 @@ describe.only('Auth API', () => {
                 assert.equal(res.body.error, 'Invalid Email or Password');
             });
     });
+
+    it('Verify Route Verifies Token', () => {
+        return request
+            .post('/auth/verify')
+            .send({ token: token })
+            .then(({ body }) => {
+                assert.equal(body.status, 200);
+                assert.equal(body.message, 'Valid Token');
+            });
+
+    });
+
+    // it('Verify Returns 500 if no token', () => {
+    //     token = '5';
+    //     return request
+    //         .post('/auth/verify')
+    //         .send({ token: token })
+    //         .then((body) => {
+    //             console.log(body);
+    //             assert.equal(body.status, 401);
+    //             assert.equal(body.error, 'Invalid Token');
+    //         });
+    // }); TODO
 });

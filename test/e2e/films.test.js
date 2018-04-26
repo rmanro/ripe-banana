@@ -1,6 +1,9 @@
 const { assert } = require('chai');
 const request = require('./request');
 const { dropCollection } = require('./db');
+const { verify } = require('../../lib/util/token-service');
+
+
 
 describe('Films API', () => {
     
@@ -60,10 +63,10 @@ describe('Films API', () => {
     });
 
     before(() => {
-        return request.post('/reviewers')
+        return request.post('/auth/signup')
             .send(reviewer1)
             .then(({ body }) => {
-                reviewer1 = body;
+                reviewer1._id = verify(body.token).id;
             });
     });
 
@@ -89,7 +92,9 @@ describe('Films API', () => {
 
     let reviewer1 = {
         name: 'IGN',
-        company: 'IGN'
+        company: 'IGN',
+        email: 'ign@ign.com',
+        password: 'ign' 
     };
 
     let review1 = {
