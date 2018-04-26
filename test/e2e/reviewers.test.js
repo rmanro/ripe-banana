@@ -13,9 +13,10 @@ describe('Reviewer e2e', () => {
     before(() => dropCollection('films'));
 
     let token = '';
-    before(() => createToken()
+    before(() => createToken(reviewer1)
         .then(t => {
             token = t;
+            console.log('THE TOKEN', verify(token));
             reviewer1._id = verify(token).id;
         }));
 
@@ -28,15 +29,10 @@ describe('Reviewer e2e', () => {
         name: 'IGN',
         company: 'IGN',
         email: 'ign@ign.com',
-        password: 'ign'
+        password: 'ign',
+        roles: ['admin']
     };
 
-    let jeff = {
-        name: 'Angry Jeff',
-        company: 'angryjeff.com',
-        email: 'jeff@angryjeff.com',
-        password: 'jeff'
-    };
 
     let studio1 = {
         name: 'Miramax',
@@ -153,7 +149,7 @@ describe('Reviewer e2e', () => {
 
     });
 
-    it('updates a reviewer', () => {
+    it('Updates a Reviewer', () => {
         reviewer1.company = 'IGNN';
         return request.put(`/reviewers/${reviewer1._id}`)
             .set('Authorization', token)

@@ -4,7 +4,7 @@ const { dropCollection, createToken } = require('./db');
 const { verify } = require('../../lib/util/token-service');
 
 
-describe('Review e2e', () => {
+describe.only('Review e2e', () => {
 
     before(() => dropCollection('films'));
     before(() => dropCollection('reviewers'));
@@ -13,11 +13,18 @@ describe('Review e2e', () => {
     before(() => dropCollection('actors'));
     before(() => dropCollection('films'));
 
-    let token = '';
-    before(() => createToken()
+    let token1 = '';
+    let token2 = '';
+    before(() => createToken(reviewer1)
         .then(t => {
-            token = t;
-            reviewer1._id = verify(token).id;
+            token1 = t;
+            reviewer1._id = verify(token1).id;
+        }));
+
+    before(() => createToken(reviewer2)
+        .then(t => {
+            token2 = t;
+            reviewer2._id = verify(token2).id;
         }));
 
     const checkOk = res => {
@@ -74,6 +81,13 @@ describe('Review e2e', () => {
         password: 'ign'
     };
 
+    let reviewer2 = {
+        name: 'Bob',
+        company: 'IGN',
+        email: 'bob@ign.com',
+        password: 'ign'
+    };
+
     before(() => {
         film1.studio._id = studio1._id;
         film1.studio.name = studio1.name;
@@ -100,13 +114,20 @@ describe('Review e2e', () => {
         film: null
     };
 
+    let review2 = {
+        rating: 1,
+        reviewer: null,
+        review: 'This movie is pretty bad',
+        film: null
+    };
 
-    it('saves a review', () => {
+
+    it('saves a review - needs to be same user', () => {
         review1.reviewer = reviewer1._id;
         review1.film = film1._id;
 
         return request.post('/reviews')
-            .set('Authorization', token)
+            .set('Authorization', token1)
             .send(review1)
             .then(({ body }) => {
                 const { _id, __v, film, createdAt, updatedAt } = body;
@@ -117,6 +138,18 @@ describe('Review e2e', () => {
                 assert.ok(updatedAt);
                 assert.deepEqual(body, { _id, __v, film, createdAt, updatedAt, ...review1 });
                 review1 = body;
+            });
+    });
+
+    it('Another user tries to save a review by someone else - not authorized', () => {
+        review2.reviewer = reviewer2._id;
+        review1.film = film1._id;
+
+        return request.post('/reviews')
+            .set('Authorization', token2)
+            .send(review1)
+            .then(({ body }) => {
+                assert.equal(body.error, 'Not Authorized');
             });
     });
 

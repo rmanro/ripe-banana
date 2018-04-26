@@ -13,7 +13,7 @@ module.exports = {
                 if(err.codeName !== 'NamespaceNotFound') throw err;
             });
     },
-    createToken(data = { email: 'ign@ign.com', password: 'ign', company: 'IGN', name: 'IGN' }) {
+    createToken(data) {
         return request
             .post('/auth/signup')
             .send(data)
