@@ -93,9 +93,8 @@ describe('Studio API', () => {
         return request.post('/studios')
             .set('Authorization', 'bad token')
             .send(studio1)
-            .then(checkOk)
             .then(({ body }) => {
-                assert.equal(body.status, 401);
+                assert.equal(body.error, 'Invalid Token');
             });
     });
 

@@ -14,10 +14,17 @@ describe('Reviewer e2e', () => {
     before(() => dropCollection('reviews'));
 
     let token = '';
+    let token2 = '';
     before(() => createToken(reviewer1)
         .then(t => {
             token = t;
             reviewer1._id = verify(token).id;
+        }));
+
+    before(() => createToken(reviewer2)
+        .then(t => {
+            token2 = t;
+            reviewer2._id = verify(token2).id;
         }));
 
     const checkOk = res => {
@@ -31,6 +38,13 @@ describe('Reviewer e2e', () => {
         email: 'ign@ign.com',
         password: 'ign',
         roles: ['admin']
+    };
+
+    let reviewer2 = {
+        name: 'Roger',
+        company: 'IGN',
+        email: 'roger@ign.com',
+        password: 'ign'
     };
 
 
@@ -111,14 +125,6 @@ describe('Reviewer e2e', () => {
             });
     });
 
-    // it('signs up a reviewer', () => {
-    //     return request.post('/auth/signup')
-    //         .send(donald)
-    //         .then(({ body }) => {
-    //             assert.ok(body.token);
-    //             donald._id = verify(body.token).id;
-    //         });
-    // });
     const roundTrip = doc => JSON.parse(JSON.stringify(doc.toJSON()));
 
     it('gets reviewer by id and returns reviews', () => {
@@ -164,7 +170,26 @@ describe('Reviewer e2e', () => {
     it('gets all reviewers', () => {
         return request.get('/reviewers')
             .then(({ body }) => {
-                assert.deepEqual(body, [reviewer1].map(getFields));
+                assert.deepEqual(body, [reviewer1, reviewer2].map(getFields));
+            });
+    });
+
+    it('Attempts an Update a Reviewer with bad token', () => {
+        reviewer1.company = 'IGNNN';
+        return request.put(`/reviewers/${reviewer1._id}`)
+            .set('Authorization', 'bad token')
+            .send(reviewer1)
+            .then(({ body }) => {
+                assert.equal(body.error, 'Invalid Token');
+            });
+    });
+
+    it('Attempts an Update a Reviewer with unauthorized user', () => {
+        return request.put(`/reviewers/${reviewer2._id}`)
+            .set('Authorization', token2)
+            .send(reviewer1)
+            .then(({ body }) => {
+                assert.equal(body.error, 'Not Authorized');
             });
     });
 

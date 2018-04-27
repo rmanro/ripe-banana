@@ -146,6 +146,16 @@ describe('actors API', () => {
             });
     });
 
+    it('attempts to update an actor with bad token', () => {
+        bradPitt.pob = 'Chicago, OK';
+        return request.put(`/actors/${bradPitt._id}`)
+            .set('Authorization', 'bad token')
+            .send(bradPitt)
+            .then(({ body }) => {
+                assert.equal(body.error, 'Invalid Token');
+            });
+    });
+
     it('returns message on delete of actor in film', () => {
         return request.delete(`/actors/${bradPitt._id}`)
             .set('Authorization', token1)

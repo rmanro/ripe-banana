@@ -15,10 +15,17 @@ describe('Films API', () => {
 
 
     let token = '';
+    let token2 = '';
     before(() => createToken(reviewer1)
         .then(t => {
             token = t;
             reviewer1._id = verify(token).id;
+        }));
+
+    before(() => createToken(reviewer2)
+        .then(t => {
+            token2 = t;
+            reviewer2._id = verify(token2).id;
         }));
 
     const checkOk = res => {
@@ -101,6 +108,13 @@ describe('Films API', () => {
         email: 'ign@ign.com',
         password: 'ign',
         roles: ['admin'] 
+    };
+
+    let reviewer2 = {
+        name: 'IGNN',
+        company: 'IGNN',
+        email: 'igNn@ignN.com',
+        password: 'ign'
     };
 
     let review1 = {
@@ -222,6 +236,13 @@ describe('Films API', () => {
             });
     });
 
+    it('non-admin attempts to delete a film', () => {
+        return request.delete(`/films/${film1._id}`)
+            .set('Authorization', token2)
+            .then(({ body }) => {
+                assert.equal(body.error, 'Not Authorized');
+            });
+    });
 
     
 });
